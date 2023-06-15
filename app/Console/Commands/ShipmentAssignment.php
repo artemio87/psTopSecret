@@ -11,14 +11,14 @@ class ShipmentAssignment extends Command
      *
      * @var string
      */
-    protected $signature = 'shipment:assignment';
+    protected $signature = 'shipment:assignment {drivers : path/drivers_file.txt} {destinations : path/destinations_file.txt}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'this command allows you to assign shipping destinations to drivers in a way that maximizes the total SS over the set of drivers, can happen using the TOP SECRET Platform Science algorithm';
+    protected $description = 'Command for assign shipment destinations to drivers based on suitability scores (SS), can happen using the TOP SECRET Platform Science algorithm';
 
     /**
      * Create a new command instance.
@@ -37,7 +37,17 @@ class ShipmentAssignment extends Command
      */
     public function handle()
     {
-        print_r('Hello From new php artisan Command');
+        // Read input files path arguments
+        $driversPath =  storage_path($this->argument('drivers'));
+        $destinationsPath =  storage_path($this->argument('destinations'));
+
+        // Read files contents
+        $drivers = file($driversPath, FILE_IGNORE_NEW_LINES);
+        $destinations = file($destinationsPath, FILE_IGNORE_NEW_LINES);
+
+        // Print Array From .txt files
+        print_r($drivers);
+        print_r($destinations);
         return 0;
     }
 }
