@@ -45,18 +45,21 @@ class ShipmentAssignment extends Command
         $drivers = file($driversPath, FILE_IGNORE_NEW_LINES);
         $destinations = file($destinationsPath, FILE_IGNORE_NEW_LINES);
 
+        // Make a copy of drivers
+        $availableDrivers = $drivers;;
+
         // Declare vars to print the result
         $matchesDD = [];
         $totalSS = 0;
 
         // Iterate Destinations to calculate SS (suitability score) and find the best driver match for each destination
         foreach ($destinations as $destination) {
-            $destinationLength = strlen($destination);
+            $destinationLength = $this->getStreetLength($destination);
             $bestScore = 0;
             $bestMatch = '';
 
             // find the best Driver for Destination
-            foreach ($drivers as $driver) {
+            foreach ($availableDrivers as $driver) {
                 $driverLength = strlen($driver);
 
                 // Verify is destination is even or odd with a module 2 to get the driver SS
@@ -80,6 +83,9 @@ class ShipmentAssignment extends Command
 
             $totalSS += $bestScore;
             $matchesDD[$destination] = $bestMatch;
+
+            // Remove assigned driver
+            $availableDrivers = array_values(array_diff($availableDrivers, [$bestMatch]));
         }
 
         // Display the total SS and matching between destinations and drivers
@@ -120,5 +126,16 @@ class ShipmentAssignment extends Command
             }
         }
         return $factors;
+    }
+
+    // Get Street Length
+    private function getStreetLength($string) {
+        // Remove numbers and spaces from the string
+        $cleanString = preg_replace('/[0-9\s]+/', '', $string);
+
+        // Find the length of the string before the first comma
+        $streetLength = strpos($cleanString, ',');
+
+        return $streetLength;
     }
 }
