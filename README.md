@@ -1,64 +1,151 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Command TPSS(Top Secret suitability scores)
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This command use the top-secret algorithm called TPSS (by me) that assigns shipment destinations to drivers based on suitability scores (SS).
 
-## About Laravel
+### Algorithm bases
+```text
+- If the length of the shipment's destination street name is even, the base suitability score (SS) is the number of vowels in the driver’s
+name multiplied by 1.5.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- If the length of the shipment's destination street name is odd, the base SS is the number of consonants in the driver’s name multiplied by 1.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- If the length of the shipment's destination street name shares any common factors (besides 1) with the length of the driver’s name, the
+SS is increased by 50% above the base SS.
+```
+## Installation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Clone the repository or download the source code.
+2. Make sure you have installed `PHP:8.1` and `Composer` on your computer.
+3. Run `composer install` to install the dependencies.
 
-## Learning Laravel
+## Usage
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The command expects two input files: `drivers.txt` and `addresses.txt`. Make sure the input files are correctly formatted before running the command.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+To execute the command, open your terminal and navigate to the project directory. Then run the following command:
 
-## Laravel Sponsors
+```shell
+php artisan shipment:assign
+```
+**NOTE:** Command use storage folder you should save the files that you want to use.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+By default, the command will look for the input files `storage/SSfiles/drivers.txt` and `storage/SSfiles/addresses.txt` in the project storage directory .
 
-### Premium Partners
+If you have the input files in a different location or with a different name, you can specify the file paths using the following command: 
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+```shell
+php artisan shipment:assignment SSfiles/drivers.txt SSfiles/addresses.txt 
+```
+If you need help or more information about the command, you can use the -h option
 
-## Contributing
+```shell
+php artisan shipment:assign -h
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Input File Format
+The input files should be in plain text format. Here are the required formats for the input files:
 
-## Code of Conduct
+### drivers.txt
+The drivers.txt file should contain a list of driver names, with each name on a separate line. For example:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```text
+John Doe
+Jane Smith
+Robert Johnson
+```
 
-## Security Vulnerabilities
+### addresses.txt
+The addresses.txt file should contain a list of destination addresses, with each address on a separate line. For example:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```text
+1234 Fake St., San Diego, CA 92126
+1797 Adolf Island Apt. 744, San Diego, CA 92126
+987 Champlin Lake, San Diego, CA 92126
+```
+## Output
+After running the command, it will display the assignment of destinations to drivers, along with their suitability scores. The output will be in the following format:
+```text
+Total Suitability Score: 21.75
++-------------------------------------------------+----------------+
+| Destination                                     | Driver         |
++-------------------------------------------------+----------------+
+| 1234 Fake St., San Diego, CA 92126              | Robert Johnson |
+| 1797 Adolf Island Apt. 744, San Diego, CA 92126 | Jane Smith     |
+| 987 Champlin Lake, San Diego, CA 92126          | John Doe       |
++-------------------------------------------------+----------------+
+```
+## Extra Features
+The command has some extra features to try including a couple of files in `storage/SSfiles/`. 
+These features consist of a couple of cases that I list now:
 
-## License
+### More Drivers than Destinations
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+To execute this case, run the following command:
+
+```shell
+php artisan shipment:assignment SSfiles/15-drivers.txt SSfiles/addresses.txt 
+```
+The output will be in the following format:
+
+```text
+Total Suitability Score: 95.75
++-----------------------------------------------------+-------------------+
+| Destination                                         | Driver            |
++-----------------------------------------------------+-------------------+
+| 215 Osinski Manors, San Diego, CA 92126             | Murphy Mosciski   |
+| 9856 Marvin Stravenue, San Diego, CA 92126          | Howard Emmerich   |
+| 7127 Kathlyn Ferry, San Diego, CA 92126             | Artemio Rodriguez |
+| 987 Champlin Lake, San Diego, CA 92126              | Anakin Skywalker  |
+| 63187 Volkman Garden Suite 447, San Diego, CA 92126 | Orval Mayert      |
+| 75855 Dessie Lights, San Diego, CA 92126            | Izaiah Lowe       |
+| 1797 Adolf Island Apt. 744, San Diego, CA 92126     | Everardo Welch    |
+| 2431 Lindgren Corners, San Diego, CA 92126          | Monica Hermann    |
+| 8725 Aufderhar River Suite 859, San Diego, CA 92126 | Harry Potter      |
+| 1234 Fake St., San Diego, CA 92126                  | Ellis Wisozk      |
++-----------------------------------------------------+-------------------+
+Drivers available to assign to new destination:
+Noemie Murphy
+Cleve Durgan
+Kaiser Sose
+
+```
+
+### More Destinations than Drivers
+
+To execute this case, run the following command:
+
+```shell
+php artisan shipment:assignment SSfiles/drivers.txt SSfiles/13-addresses.txt 
+```
+The output will be in the following format:
+
+```text
+Total Suitability Score: 87.5
++-----------------------------------------------------+-----------------+
+| Destination                                         | Driver          |
++-----------------------------------------------------+-----------------+
+| 215 Osinski Manors, San Diego, CA 92126             | Murphy Mosciski |
+| 9856 Marvin Stravenue, San Diego, CA 92126          | Howard Emmerich |
+| 7127 Kathlyn Ferry, San Diego, CA 92126             | Orval Mayert    |
+| 987 Champlin Lake, San Diego, CA 92126              | Izaiah Lowe     |
+| 63187 Volkman Garden Suite 447, San Diego, CA 92126 | Ellis Wisozk    |
+| 75855 Dessie Lights, San Diego, CA 92126            | Cleve Durgan    |
+| 1797 Adolf Island Apt. 744, San Diego, CA 92126     | Everardo Welch  |
+| 2431 Lindgren Corners, San Diego, CA 92126          | Monica Hermann  |
+| 8725 Aufderhar River Suite 859, San Diego, CA 92126 | Noemie Murphy   |
+| 1234 Fake St., San Diego, CA 92126                  | Kaiser Sose     |
++-----------------------------------------------------+-----------------+
+Addresses that cannot be assigned today:
+2101 KETTNER BLVD, SAN DIEGO, CA 92101
+1801 DIAMOND ST UNIT 310, SAN DIEGO, CA 92109
+2701 ELM AVE, SAN DIEGO, CA 92154
+```
+
+## Test
+
+The project has some tests to check the operation of the command to execute it use the following command:
+
+```shell
+php artisan test
+```
+

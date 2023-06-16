@@ -105,8 +105,12 @@ class ShipmentAssignment extends Command
 
         // Display the total SS and matching between destinations and drivers (Pretty Way)
         $this->info("Total Suitability Score: $totalSS");
+        // Remove rows that not have driver assigned
+        $matchedDestinations = array_filter($matchesDD, function ($driver) {
+            return !empty($driver);
+        });
         // Display result array the matches between destination and drivers in a table
-        $this->table(['Destination', 'Driver'], array_map(fn ($destination, $driver) => [$destination, $driver], array_keys($matchesDD), $matchesDD));
+        $this->table(['Destination', 'Driver'], array_map(fn ($destination, $driver) => [$destination, $driver], array_keys($matchedDestinations), $matchedDestinations));
 
         // Check if there are more addresses for which there are no drivers available
         if (count($destinations) > count($drivers)) {
