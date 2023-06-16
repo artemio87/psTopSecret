@@ -11,7 +11,7 @@ class ShipmentAssignment extends Command
      *
      * @var string
      */
-    protected $signature = 'shipment:assignment {drivers : path/drivers_file.txt} {destinations : path/destinations_file.txt}';
+    protected $signature = 'shipment:assignment {drivers=SSfiles\drivers.txt : path/drivers_file.txt} {destinations=SSfiles\addresses.txt : path/addresses_file.txt}';
 
     /**
      * The console command description.
@@ -41,12 +41,27 @@ class ShipmentAssignment extends Command
         $driversPath =  storage_path($this->argument('drivers'));
         $destinationsPath =  storage_path($this->argument('destinations'));
 
+        // Check if file name contain the word drivers and destinations/addresses to make sure put correct file name
+        // and the files are set in correct argument position
+
+        if (!str_contains(basename($driversPath), "drivers.txt")) {
+            $this->warn("Please Check your if input files are correct can be add '-h' after command to give more information");
+            $this->error("The file name does not contain the word 'drivers.txt'. Execution stopped.");
+            return;
+        }
+
+        if (!str_contains(basename($destinationsPath), "addresses.txt")) {
+            $this->warn("Please Check your if input files are correct can be add '-h' after command to give more information");
+            $this->error("The file name does not contain the word 'addresses.txt'. Execution stopped.");
+            return;
+        }
+
         // Read files contents
         $drivers = file($driversPath, FILE_IGNORE_NEW_LINES);
         $destinations = file($destinationsPath, FILE_IGNORE_NEW_LINES);
 
         // Make a copy of drivers
-        $availableDrivers = $drivers;;
+        $availableDrivers = $drivers;
 
         // Declare vars to print the result
         $matchesDD = [];
@@ -88,22 +103,36 @@ class ShipmentAssignment extends Command
             $availableDrivers = array_values(array_diff($availableDrivers, [$bestMatch]));
         }
 
-        // Display the total SS and matching between destinations and drivers
-        printf($totalSS);
-        print("\n");
-        print_r($matchesDD);
+        // Display the total SS and matching between destinations and drivers (Pretty Way)
+        $this->info("Total Suitability Score: $totalSS");
+        $this->table(['Destination', 'Driver'], array_map(fn ($destination, $driver) => [$destination, $driver], array_keys($matchesDD), $matchesDD));
+
+        // Check if there are more addresses for which there are no drivers available
+        if (count($destinations) > count($drivers)) {
+            $unshippedDestinations = array_slice($destinations, count($drivers));
+            $this->info("Addresses that cannot be assigned today:");
+            $this->info(implode("\n", $unshippedDestinations));
+        }
+
+        // Check for drivers that were not assigned to destination
+        if (!empty($availableDrivers)) {
+            $this->info("Drivers available to assign to new destination:");
+            $this->info(implode("\n", $availableDrivers));
+        }
     }
 
     private function countVowels($string)
     {
-        $vowels = ['a', 'e', 'i', 'o', 'u'];
-        return count(array_intersect(str_split(strtolower($string)), $vowels));
+        // Regular expression '/[aeiou]/i'  to find vowels in the string
+        preg_match_all('/[aeiou]/i', $string, $matches);
+        return count($matches[0]);
     }
 
     private function countConsonants($string)
     {
-        $vowels = ['a', 'e', 'i', 'o', 'u'];
-        return count(array_diff(str_split(strtolower($string)), $vowels));
+        // Regular expression '/[^aeiou]/i' adding ^ to find all letters that is not a vowel in the string
+        $consonantsCount = preg_match_all('/[^aeiou]/i', $string);
+        return $consonantsCount;
     }
 
     // Review if Destination and Driver has more than 1 factors in common
