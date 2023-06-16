@@ -105,6 +105,7 @@ class ShipmentAssignment extends Command
 
         // Display the total SS and matching between destinations and drivers (Pretty Way)
         $this->info("Total Suitability Score: $totalSS");
+        // Display result array the matches between destination and drivers in a table
         $this->table(['Destination', 'Driver'], array_map(fn ($destination, $driver) => [$destination, $driver], array_keys($matchesDD), $matchesDD));
 
         // Check if there are more addresses for which there are no drivers available
@@ -131,7 +132,7 @@ class ShipmentAssignment extends Command
     private function countConsonants($string)
     {
         // Regular expression '/[^aeiou]/i' adding ^ to find all letters that is not a vowel in the string
-        $consonantsCount = preg_match_all('/[^aeiou]/i', $string);
+        $consonantsCount = preg_match_all('/[^\saeiou]/i', $string);
         return $consonantsCount;
     }
 
