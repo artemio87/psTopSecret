@@ -15,7 +15,7 @@ SS is increased by 50% above the base SS.
 ## Installation
 
 1. Clone the repository or download the source code.
-2. Make sure you have installed `PHP:8.1` and `Composer` on your computer.
+2. Make sure you have installed `PHP:8.1` or higher and `Composer` on your computer.
 3. Run `composer install` to install the dependencies.
 
 ## Usage
